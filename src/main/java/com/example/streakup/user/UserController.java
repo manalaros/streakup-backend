@@ -3,6 +3,7 @@ package com.example.streakup.user;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.net.URI;
 
@@ -27,5 +28,10 @@ public class UserController {
         return ResponseEntity
                 .created(location)
                 .body(response);
+    }
+
+    @GetMapping("/me")
+    public UserResponse me(Authentication authentication) {
+        return userService.findByUsername(authentication.getName());
     }
 }

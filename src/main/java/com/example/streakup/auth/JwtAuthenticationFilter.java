@@ -40,10 +40,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = authorization.substring(7);
 
             try {
+                if (!jwtService.isValid(token)) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 String username = jwtService.extractUsername(token);
 
                 if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                    userRepository.findByUsername(username).ifPresent(user -> {
+                    userRepository.findByUsernameIgnoreCase(username).ifPresent(user -> {
                         var authentication =
                                 new UsernamePasswordAuthenticationToken(
                                         user.getUsername(),
