@@ -1,0 +1,809 @@
+openapi: 3.0.3
+info:
+  title: StreakUp API
+  version: 1.0.0
+  description: |
+    StreakUp API for users, activities, streaks, friendships, and the weekly leaderboard.
+    Activity dates use the YYYY-MM-DD format and the timezone configured in APP_TIMEZONE.
+servers:
+  - url: http://localhost:8080
+    description: Local development
+tags:
+  - name: Health
+  - name: Auth
+  - name: Users
+  - name: Activities
+  - name: Friends
+  - name: Statistics
+security:
+  - bearerAuth: []
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      security: []
+      summary: Check API availability
+      responses:
+        '200':
+          description: API is available
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: StreakUp backend is running
+  /api/users:
+    post:
+      tags: [Users]
+      security: []
+      summary: Register a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Register a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Log in and obtain a JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/users/me:
+    get:
+      tags: [Users]
+      summary: Get the authenticated user
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/activities:
+    get:
+      tags: [Activities]
+      summary: List the authenticated user's activities
+      responses:
+        '200':
+          description: Activities ordered from newest to oldest
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Activities]
+      summary: Create an activity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityRequest'
+      responses:
+        '201':
+          description: Activity created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/activities/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Activities]
+      summary: Get one of the user's activities
+      responses:
+        '200':
+          description: Activity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Activities]
+      summary: Update one of the user's activities
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityRequest'
+      responses:
+        '200':
+          description: Activity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Activities]
+      summary: Update one of the user's activities
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityRequest'
+      responses:
+        '200':
+          description: Activity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Activities]
+      summary: Delete one of the user's activities
+      responses:
+        '204':
+          description: Actividad eliminada
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/statistics:
+    get:
+      tags: [Statistics]
+      summary: Get the user's own statistics
+      responses:
+        '200':
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/stats:
+    get:
+      tags: [Statistics]
+      summary: Alias for the user's own statistics
+      responses:
+        '200':
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/streak:
+    get:
+      tags: [Statistics]
+      summary: Alias for the user's own statistics
+      responses:
+        '200':
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/streaks:
+    get:
+      tags: [Statistics]
+      summary: Alias for the user's own statistics
+      responses:
+        '200':
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/statistics/{userId}:
+    get:
+      tags: [Statistics]
+      summary: Get the user's or an accepted friend's statistics
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/users/{userId}/statistics:
+    get:
+      tags: [Statistics]
+      summary: Get the user's or an accepted friend's statistics
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/users/{userId}/activities:
+    get:
+      tags: [Activities]
+      summary: Get the user's or an accepted friend's activities
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Actividades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/leaderboard/weekly:
+    get:
+      tags: [Statistics]
+      summary: Get the visible weekly leaderboard
+      responses:
+        '200':
+          description: Ranking from Monday to Sunday
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeaderboardEntry'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/leaderboard:
+    get:
+      tags: [Statistics]
+      summary: Alias for the weekly leaderboard
+      responses:
+        '200':
+          description: Ranking from Monday to Sunday
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeaderboardEntry'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/friends/search:
+    get:
+      tags: [Friends]
+      summary: Search users by username or email
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Up to 20 users, excluding the current user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/friends/requests:
+    get:
+      tags: [Friends]
+      summary: List pending received requests
+      responses:
+        '200':
+          description: Solicitudes pendientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FriendshipResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Friends]
+      summary: Send a request using the request body
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FriendRequest'
+      responses:
+        '201':
+          description: Solicitud creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendshipResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/friends/request:
+    post:
+      tags: [Friends]
+      summary: Alias for sending a request using the request body
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FriendRequest'
+      responses:
+        '201':
+          description: Solicitud creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendshipResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/friends/requests/{userId}:
+    post:
+      tags: [Friends]
+      summary: Send a request to a user
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '201':
+          description: Solicitud creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendshipResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/friends/requests/{requestId}/accept:
+    post:
+      tags: [Friends]
+      summary: Accept a received request
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Solicitud aceptada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendshipResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/friends/{requestId}/accept:
+    post:
+      tags: [Friends]
+      summary: Alias for accepting a received request
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Solicitud aceptada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendshipResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/friends:
+    get:
+      tags: [Friends]
+      summary: List accepted friendships
+      responses:
+        '200':
+          description: Amigos aceptados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FriendshipResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    RequestId:
+      name: requestId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Unauthorized:
+      description: Authentication required or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Forbidden:
+      description: No permission to access the resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Conflict:
+      description: Conflict or duplicate resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+  schemas:
+    UserRegistrationRequest:
+      type: object
+      required: [username, email, password]
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 30
+          example: maria
+        email:
+          type: string
+          format: email
+          example: maria@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 72
+          example: password123
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: maria@example.com
+        password:
+          type: string
+          format: password
+          example: password123
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiJ9...
+        user:
+          $ref: '#/components/schemas/UserResponse'
+    UserResponse:
+      type: object
+      required: [id, username, email, createdAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        username:
+          type: string
+          example: maria
+        email:
+          type: string
+          format: email
+          example: maria@example.com
+        createdAt:
+          type: string
+          format: date-time
+    ActivityRequest:
+      type: object
+      required: [type, date, durationMinutes]
+      properties:
+        type:
+          $ref: '#/components/schemas/ActivityType'
+        date:
+          type: string
+          format: date
+          example: 2026-09-20
+        durationMinutes:
+          type: integer
+          minimum: 1
+          maximum: 1440
+          example: 30
+        distanceKm:
+          type: number
+          format: double
+          minimum: 0
+          example: 5.2
+        notes:
+          type: string
+          maxLength: 500
+          example: Morning workout
+    ActivityResponse:
+      allOf:
+        - $ref: '#/components/schemas/ActivityRequest'
+        - type: object
+          required: [id, userId, username, createdAt]
+          properties:
+            id:
+              type: integer
+              format: int64
+            userId:
+              type: integer
+              format: int64
+            username:
+              type: string
+            createdAt:
+              type: string
+              format: date-time
+    ActivityType:
+      type: string
+      enum:
+        - WALKING
+        - RUNNING
+        - CYCLING
+        - SWIMMING
+        - GYM
+        - STRENGTH
+        - YOGA
+        - MEDITATION
+        - STUDY
+        - READING
+        - OTHER
+    FriendRequest:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 2
+        friendId:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Alias accepted by the backend for userId.
+        targetUserId:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Alias accepted by the backend for userId.
+    FriendshipResponse:
+      type: object
+      required: [id, status, requester, addressee, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED]
+        requester:
+          $ref: '#/components/schemas/UserResponse'
+        addressee:
+          $ref: '#/components/schemas/UserResponse'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    StatisticsResponse:
+      type: object
+      required:
+        - userId
+        - username
+        - currentStreak
+        - longestStreak
+        - totalActivities
+        - totalDurationMinutes
+        - weeklyActivities
+        - weeklyDurationMinutes
+      properties:
+        userId:
+          type: integer
+          format: int64
+        username:
+          type: string
+        currentStreak:
+          type: integer
+          format: int64
+        longestStreak:
+          type: integer
+          format: int64
+        totalActivities:
+          type: integer
+          format: int64
+        totalDurationMinutes:
+          type: integer
+          format: int64
+        weeklyActivities:
+          type: integer
+          format: int64
+        weeklyDurationMinutes:
+          type: integer
+          format: int64
+    LeaderboardEntry:
+      type: object
+      required: [rank, userId, username, activities, durationMinutes]
+      properties:
+        rank:
+          type: integer
+        userId:
+          type: integer
+          format: int64
+        username:
+          type: string
+        activities:
+          type: integer
+          format: int64
+        durationMinutes:
+          type: integer
+          format: int64
+    ApiError:
+      type: object
+      required: [timestamp, status, error, message, path, fields]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+        fields:
+          type: object
+          additionalProperties:
+            type: string
